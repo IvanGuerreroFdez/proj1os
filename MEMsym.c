@@ -11,8 +11,8 @@
 #define TAM_LINEA 8
 #define NUM_ROWS 7 // esto es un ejemplo, no se que poner
 
-const int globalitme = 0;
-const int numfallos = 0;
+const int globalTime = 0;
+const int failNo = 0;
 
 typedef struct {
     unsigned char ETQ;
@@ -34,7 +34,7 @@ int noLines(FILE *fp) {
 } // end of noLines
 
 // Reads a dynamic line of a file
-char * leeLineDinamicaFichero(FILE * f) {
+char * leeLineDinamicaFichero(FILE *f) {
 	char * linea = (char *) malloc(sizeof(char) * 3);
 	int idx = 0;
 	char c = 0;
@@ -60,16 +60,17 @@ char * leeLineDinamicaFichero(FILE * f) {
 } // end of leeLineaDinamicaFichero
 
 // Initializes the label fields to xFF (and cache data to x23)
-/*void initialize(char * addr) {
-    char addr = (char *) malloc(sizeof(char) * 3);
+void initialize(char *addr, FILE *f) {
+    char c;
+    addr = (char *) malloc(sizeof(char) * 3); 
 
     for(int i = 0; i < sizeof(addr); i++) {
-        while((char c = fgets()) != eof()) {
+        while(c = getchar() != feof(f)) {
         // Descomponer en binario en palabra, linea y etiqueta/label
 
         } // end while loop
     } // end for loop
-} // end of initialize*/
+} // end of initialize
 
 void cleanCache(T_CACHE_LINE tbl[NUM_ROWS]) {} // end of cleanCache
 
@@ -80,19 +81,23 @@ void parseAddress(unsigned int addr, int *LABEL, int *word, int *line, int *bloc
 void treatFailureMiss(T_CACHE_LINE *tbl, char *MRAM, int LABEL, int line, int block) {} // end of treatFailureMiss
 
 int main() {
+    // Initialization of variables
     char *linea_buff;
     char *accesos = (char *) malloc(sizeof(char) * 10); // Array of memory accesses
+    FILE *memoryA = fopen("accesos_memoria.txt", "r"); // Opens accesos_memoria.txt in read mode
+    FILE *ramC = fopen("CONTENTS_RAM.bin", "r"); // Opens CONTENTS_RAM.bin in read mode
 
-    FILE *f = fopen("accesos_memoria.txt", "r");
-
-    // This happens when the file is not found
-    if(f == NULL) {
-        printf("Could not open file.\n");
-        return 1;
-    } // end if condition
+    // Returns -1 when at least one of the files is not found
+    if(memoryA == NULL) {
+        printf("Could not open 'accesos_memoria.txt'. \n");
+        return -1;
+    } else if(ramC == NULL) {
+        printf("Could not open 'CONTENTS_RAM.bin'. \n");
+        return -1;
+    } // end if, else if conditions
     
-    for(int i = 0; i < noLines(f); i++) {
-        linea_buff = leeLineDinamicaFichero(f);
+    for(int i = 0; i < noLines(memoryA); i++) {
+        linea_buff = leeLineDinamicaFichero(memoryA);
         *(accesos + i) = linea_buff;
 
         if((i + 1) % 10 == 0) {
@@ -100,11 +105,29 @@ int main() {
         } // end if condition
     } // end for loop
     
-    initialize(linea_buff); // Invokes the function to initialize the label fields
+    initialize(linea_buff, memoryA); // Invokes the function to initialize the label fields
+
+    // Dump the contents of the cache on the screen
+
+
+    // Calculates the cache line of a given address
+
+
+    // Checks if tag cache line contains is the same
+
+
+    sleep(1); // 1 second sleep
+
+    // Writes the number of accesses and failures, avg time and text read
+
+
+    // Process ends after reading dirs_memoria.txt (accesos_memoria.txt???) and actions needed
 
     printf("Al menos esto se está imprimiendo. \n");
-    sleep(1);
 
-    fclose(f); // Closes the file
+    // Closes the files
+    fclose(memoryA);
+    fclose(ramC);
+
     return 0;
 } // end of main
