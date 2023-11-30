@@ -1,25 +1,26 @@
 // Authors:
+// Gracia de Vargas, Luis (INSG2A)
 // Guerrero Fernández, Iván (INSG2A)
 // Kleinschrot Colomer, Harald Xerxes (INSG2A)
-// Gracia de Vargas, Luis (INSG2A)
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#define TAM_LINEA 8
-#define NUM_ROWS 7 // esto es un ejemplo, no se que poner
+#define TAM_LINEA 16
+#define NUM_ROWS 8
 
-const int globalTime = 0;
-const int failNo = 0;
+float avgTime = 0;
+int failNo = 0;
 
+// Struct for cache lines
 typedef struct {
     unsigned char ETQ;
     unsigned char Data[TAM_LINEA];
 } T_CACHE_LINE;
 
-// Counts no. of lines in a txt
+// Counts no. of lines in a file
 int noLines(FILE *fp) {
     int cont = 0;
     char c;
@@ -86,6 +87,7 @@ int main() {
     char *accesos = (char *) malloc(sizeof(char) * 10); // Array of memory accesses
     FILE *memoryA = fopen("accesos_memoria.txt", "r"); // Opens accesos_memoria.txt in read mode
     FILE *ramC = fopen("CONTENTS_RAM.bin", "r"); // Opens CONTENTS_RAM.bin in read mode
+    T_CACHE_LINE *cacheConts = (T_CACHE_LINE *) malloc(NUM_ROWS * sizeof(T_CACHE_LINE)); // Array of cache lines, remember that NUM_ROWS = 8
 
     // Returns -1 when at least one of the files is not found
     if(memoryA == NULL) {
