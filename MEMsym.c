@@ -17,7 +17,8 @@ int failNo = 0;
 // Struct for cache lines
 typedef struct {
     unsigned char ETQ;
-    unsigned char Data[TAM_LINEA];
+    unsigned char *Data;
+    Data = (char *) malloc(sizeof(char) * TAM_LINEA);
 } T_CACHE_LINE;
 
 // Counts no. of lines in a file
@@ -60,17 +61,12 @@ char * leeLineDinamicaFichero(FILE *f) {
 	return linea;
 } // end of leeLineaDinamicaFichero
 
-// Initializes the label fields to xFF (and cache data to x23)
-void initialize(char *addr, FILE *f) {
-    char c;
-    addr = (char *) malloc(sizeof(char) * 3); 
+// Initializes the label fields to xFF and cache data to x23
+void initialize(char *addr) {
+    // Access the ETQ
 
-    for(int i = 0; i < sizeof(addr); i++) {
-        while(c = getchar() != feof(f)) {
-        // Descomponer en binario en palabra, linea y etiqueta/label
+    // Access the data array inside the cache lines struct
 
-        } // end while loop
-    } // end for loop
 } // end of initialize
 
 void cleanCache(T_CACHE_LINE tbl[NUM_ROWS]) {} // end of cleanCache
@@ -107,7 +103,7 @@ int main() {
         } // end if condition
     } // end for loop
     
-    initialize(linea_buff, memoryA); // Invokes the function to initialize the label fields
+    initialize(linea_buff); // Invokes the function to initialize the label fields
 
     // Dump the contents of the cache on the screen
 
