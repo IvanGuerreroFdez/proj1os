@@ -60,7 +60,7 @@ char * leeLineDinamicaFichero(FILE * f) {
 } // end of leeLineaDinamicaFichero
 
 // Initializes the label fields to xFF (and cache data to x23)
-void initialize(char * addr) {
+/*void initialize(char * addr) {
     char addr = (char *) malloc(sizeof(char) * 3);
 
     for(int i = 0; i < sizeof(addr); i++) {
@@ -69,7 +69,7 @@ void initialize(char * addr) {
 
         } // end while loop
     } // end for loop
-} // end of initialize
+} // end of initialize*/
 
 void cleanCache(T_CACHE_LINE tbl[NUM_ROWS]) {} // end of cleanCache
 
