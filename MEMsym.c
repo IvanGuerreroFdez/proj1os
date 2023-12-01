@@ -62,7 +62,6 @@ char * leeLineDinamicaFichero(FILE *f) {
 } // end of leeLineaDinamicaFichero
 
 // Initializes the label fields to xFF and cache data to x23
-//T_CACHE_LINE *cleanCache(T_CACHE_LINE tbl[NUM_ROWS]) { 
 void cleanCache(T_CACHE_LINE *tbl) {
     for(int i = 0; i < NUM_ROWS; i++) {
         tbl[i].ETQ = 0xFF;
@@ -72,7 +71,6 @@ void cleanCache(T_CACHE_LINE *tbl) {
         } // end for loop
     } // end for loop
 
-    //return tbl;
 } // end of cleanCache
 
 // Function to display the contents of the cache
@@ -87,23 +85,21 @@ void dumpCache(T_CACHE_LINE *tbl) {
         printf("\n");
     } // end for loop
 } // end of dumpCache
-/*
-// Prints the contents of the cache in the screen
-void dumpCache(T_CACHE_LINE *tbl) {
-    for(int i = 0; i < NUM_ROWS; i++) {
-        printf("%02x\t", tbl[i].ETQ);
-        printf("Data: ");
 
-        for(int j = 0; j < TAM_LINEA; j++) {
-            printf("%02x ", tbl[i].Data[j]);
-        } // end for loop
+void parseAddress(unsigned int addr, int *LABEL, int *word, int *line, int *block) {
+    int i = 0;
 
-        printf("\n");
-    } // end for loop
-} // end of dumpCache
-*/
+    *block = addr & 0x0F; // Extract the 4-bit block field
+    *word = (addr >> 4) & 0x07; // Extract the 3-bit word field
+    *line = (addr >> 7) & 0x07; // Extract the 3-bit line field
+    *LABEL = (addr >> 10) & 0x1F; // Extract the 5-bit label field
 
-void parseAddress(unsigned int addr, int *LABEL, int *word, int *line, int *block) {} // end of parseAddress
+    if (*LABEL != cache[*line].ETQ) {
+        printf("T: %d, Cache Miss %d, Address %04X, Label %X, Line %02X, Word %02X, Block %02X", i++, failNo++, addr, *LABEL, *line, *word, *block);
+    } else {
+        printf("T: %d, Cache Hit, Address %04X, Label %X, Line %02X, Word %02X, Data %02X", i++, addr, *LABEL, *line, *word, cache[*line].Data[*word]);
+    }
+} // end of parseAddress
 
 void treatFailureMiss(T_CACHE_LINE *tbl, char *MRAM, int LABEL, int line, int block) {} // end of treatFailureMiss
 
