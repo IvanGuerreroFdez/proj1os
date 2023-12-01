@@ -17,8 +17,8 @@ int failNo = 0;
 // Struct for cache lines
 typedef struct {
     unsigned char ETQ;
-    unsigned char *Data;
-    Data = (char *) malloc(sizeof(char) * TAM_LINEA);
+    unsigned char Data[TAM_LINEA];
+    // unsigned char *Data = (unsigned char *) malloc(sizeof(unsigned char) * TAM_LINEA); //Preguntar al Profe si hay q dejarlo como en el PDF o lo modificamos para la MemDyn
 } T_CACHE_LINE;
 
 // Counts no. of lines in a file
@@ -62,15 +62,17 @@ char * leeLineDinamicaFichero(FILE *f) {
 } // end of leeLineaDinamicaFichero
 
 // Initializes the label fields to xFF and cache data to x23
-void initialize(char *addr) {
-    // Access the ETQ
+void cleanCache(T_CACHE_LINE tbl[NUM_ROWS]) { 
+    for(int i = 0; i < NUM_ROWS; i++) {
+        tbl[i].ETQ = 0xFF;
 
-    // Access the data array inside the cache lines struct
+        for(int j = 0; j < TAM_LINEA; j++) {
+            tbl[i].Data[i] = 0x23;
+        } // end for loop
+    } // end for loop
+} // end of cleanCache
 
-} // end of initialize
-
-void cleanCache(T_CACHE_LINE tbl[NUM_ROWS]) {} // end of cleanCache
-
+// Prints the contents of the cache in the screen
 void dumpCache(T_CACHE_LINE *tbl) {} // end of dumpCache
 
 void parseAddress(unsigned int addr, int *LABEL, int *word, int *line, int *block) {} // end of parseAddress
@@ -80,7 +82,7 @@ void treatFailureMiss(T_CACHE_LINE *tbl, char *MRAM, int LABEL, int line, int bl
 int main() {
     // Initialization of variables
     char *linea_buff;
-    char *accesos = (char *) malloc(sizeof(char) * 10); // Array of memory accesses
+    //char *accesos = (char *) malloc(sizeof(char) * 10); // Array of memory accesses
     FILE *memoryA = fopen("accesos_memoria.txt", "r"); // Opens accesos_memoria.txt in read mode
     FILE *ramC = fopen("CONTENTS_RAM.bin", "r"); // Opens CONTENTS_RAM.bin in read mode
     T_CACHE_LINE *cacheConts = (T_CACHE_LINE *) malloc(NUM_ROWS * sizeof(T_CACHE_LINE)); // Array of cache lines, remember that NUM_ROWS = 8
@@ -93,20 +95,24 @@ int main() {
         printf("Could not open 'CONTENTS_RAM.bin'. \n");
         return -1;
     } // end if, else if conditions
+
+    cleanCache(cacheConts);
+
+    /*for(int i = 0; i < NUM_ROWS; i++) {
+        initialize(*(linea_buff + i)); // Invokes the function to initialize the label fields
+    } // end for loop*/
     
-    for(int i = 0; i < noLines(memoryA); i++) {
+    /*for(int i = 0; i < noLines(memoryA); i++) {
         linea_buff = leeLineDinamicaFichero(memoryA);
         *(accesos + i) = linea_buff;
 
         if((i + 1) % 10 == 0) {
             accesos = (char *) realloc(accesos, sizeof(char) * (i + 11));
         } // end if condition
-    } // end for loop
+    } // end for loop*/
     
-    initialize(linea_buff); // Invokes the function to initialize the label fields
-
     // Dump the contents of the cache on the screen
-
+    //dumpCache(); // develop :)
 
     // Calculates the cache line of a given address
 
