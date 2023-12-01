@@ -62,18 +62,46 @@ char * leeLineDinamicaFichero(FILE *f) {
 } // end of leeLineaDinamicaFichero
 
 // Initializes the label fields to xFF and cache data to x23
-void cleanCache(T_CACHE_LINE tbl[NUM_ROWS]) { 
+//T_CACHE_LINE *cleanCache(T_CACHE_LINE tbl[NUM_ROWS]) { 
+void cleanCache(T_CACHE_LINE *tbl) {
     for(int i = 0; i < NUM_ROWS; i++) {
         tbl[i].ETQ = 0xFF;
 
         for(int j = 0; j < TAM_LINEA; j++) {
-            tbl[i].Data[i] = 0x23;
+            tbl[i].Data[j] = 0x23;
         } // end for loop
     } // end for loop
+
+    //return tbl;
 } // end of cleanCache
 
+// Function to display the contents of the cache
+void dumpCache(T_CACHE_LINE *tbl) {
+    for (int i = 0; i < NUM_ROWS; i++) {
+        printf("ETQ: %02X, Data: ", tbl[i].ETQ);
+
+        for (int j = 0; j < TAM_LINEA; j++) {
+            printf("%02x ", tbl[i].Data[j]);
+        } // end for loop
+
+        printf("\n");
+    } // end for loop
+} // end of dumpCache
+/*
 // Prints the contents of the cache in the screen
-void dumpCache(T_CACHE_LINE *tbl) {} // end of dumpCache
+void dumpCache(T_CACHE_LINE *tbl) {
+    for(int i = 0; i < NUM_ROWS; i++) {
+        printf("%02x\t", tbl[i].ETQ);
+        printf("Data: ");
+
+        for(int j = 0; j < TAM_LINEA; j++) {
+            printf("%02x ", tbl[i].Data[j]);
+        } // end for loop
+
+        printf("\n");
+    } // end for loop
+} // end of dumpCache
+*/
 
 void parseAddress(unsigned int addr, int *LABEL, int *word, int *line, int *block) {} // end of parseAddress
 
@@ -96,7 +124,11 @@ int main() {
         return -1;
     } // end if, else if conditions
 
+    // Initializes cache contents
     cleanCache(cacheConts);
+
+    // Dump the contents of the cache on the screen
+    dumpCache(cacheConts);
 
     /*for(int i = 0; i < NUM_ROWS; i++) {
         initialize(*(linea_buff + i)); // Invokes the function to initialize the label fields
@@ -110,9 +142,6 @@ int main() {
             accesos = (char *) realloc(accesos, sizeof(char) * (i + 11));
         } // end if condition
     } // end for loop*/
-    
-    // Dump the contents of the cache on the screen
-    //dumpCache(); // develop :)
 
     // Calculates the cache line of a given address
 
@@ -127,11 +156,15 @@ int main() {
 
     // Process ends after reading dirs_memoria.txt (accesos_memoria.txt???) and actions needed
 
-    printf("Al menos esto se está imprimiendo. \n");
-
     // Closes the files
     fclose(memoryA);
     fclose(ramC);
+
+    // Frees dynamic memory allocations
+    free(linea_buff);
+    free(cacheConts);
+
+    printf("Al menos esto se esta imprimiendo. \n");
 
     return 0;
 } // end of main
