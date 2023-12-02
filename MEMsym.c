@@ -11,9 +11,6 @@
 #define TAM_LINEA 16
 #define NUM_ROWS 8
 
-//float avgTime = 0;
-int failNo = 0;
-
 // Struct for cache lines
 typedef struct {
     unsigned char ETQ;
@@ -52,17 +49,25 @@ void parseAddress(unsigned int addr, int *LABEL, int *word, int *line, int *bloc
     *LABEL = (addr >> 10) & 0x1F; // Extract the 5-bit label field
 } // end of parseAddress
 
-void treatFailureMiss(T_CACHE_LINE *tbl, char *MRAM, int LABEL, int line, int block) {} // end of treatFailureMiss
+void treatFailureMiss(T_CACHE_LINE *tbl, char *MRAM, int LABEL, int line, int block) {
+        // Copy the corresponding block from the MRAM array
+        int startAddress = (block << 7) | (line << 4);
+        memcpy(tbl[line].Data, &MRAM[startAddress], TAM_LINEA);
+        // Update the Label field
+        tbl[line].ETQ = LABEL;
+} // end of treatFailureMiss
 
 int main() {
     // Initialization of variables
-    //char *linea_buff;
+    int failNo = 0;
     FILE *memoryA = fopen("./accesos_memoria.txt", "r"); // Opens accesos_memoria.txt in read mode
     FILE *ramC = fopen("./CONTENTS_RAM.bin", "rb"); // Opens CONTENTS_RAM.bin in read mode
     FILE *cacheC = fopen("./CONTENTS_CACHE.bin", "wb"); // Opens CONTENTS_CACHE.bin in write mode
     T_CACHE_LINE *cacheConts = (T_CACHE_LINE *) malloc(NUM_ROWS * sizeof(T_CACHE_LINE)); // Array of cache lines, remember that NUM_ROWS = 8
-    //unsigned char *simulRAM = (unsigned char *) malloc(sizeof(unsigned char) * 4096); // Array that reads the contents in CONTENTS_RAM.bin
+    unsigned char *simulRAM = (unsigned char *) malloc(sizeof(unsigned char) * 4096); // Array that reads the contents in CONTENTS_RAM.bin
     int *address = (int *) malloc(sizeof(int) * 5); // Array of division of address
+    char *text = (char *)malloc(sizeof(char) * 16); // Dynamic memory for text
+    int textIndex = 0;
 
     // Returns -1 when at least one of the files is not found
     if(memoryA == NULL) {
@@ -80,9 +85,7 @@ int main() {
     cleanCache(cacheConts);
 
     // Dump the contents of the cache on the screen
-    dumpCache(cacheConts)
-
-    sleep(1); // 1 second sleep
+    dumpCache(cacheConts);
     
     unsigned char *Simul_RAM = (unsigned char*) malloc(sizeof(unsigned char) * 4096);
     if (Simul_RAM == NULL) {
@@ -90,7 +93,7 @@ int main() {
         return -1;
     } // end if condition
 
-    fread(Simul_RAM, sizeof(unsigned char), 4096, ramC); // IVAN COMENTA ESTO POR FAVOR
+    fread(Simul_RAM, sizeof(unsigned char), 4096, ramC); // Read the content of CONTENTS_RAM and stores it on Simul_RAM 
     /*//PRUEBA
     for (int i=0; i<linesInMemoryA; i++) {
         printf("%02X \n", Simul_RAM[i]);
@@ -100,7 +103,8 @@ int main() {
     rewind(memoryA);
     char *linea_buff = (char *) malloc(sizeof(char) * 16);
     int globalTime = 0;
-    while (fgets(linea_buff, sizeof(linea_buff), memoryA) != NULL) {
+    int accesses = 0;
+    while (fgets(linea_buff, 16, memoryA) != NULL) { //16 is used instead of sizeof(linea_buff) to return the allocated size for the buffer
         unsigned int address = strtoul(linea_buff, NULL, 16);
         int LABEL, word, line, block;
         parseAddress(address, &LABEL, &word, &line, &block);
@@ -109,35 +113,46 @@ int main() {
             printf("T: %d, Cache Hit, Address %04X, Label %X, Line %02X, Word %02X, Data %02X\n", globalTime, address, LABEL, line, word, cacheConts[line].Data[word]); 
             globalTime++;
 
-            // Dump the contents of the cache on the screen (for a cleaner execution it will be printed at the end)
-            // dumpCache(cacheConts);
+            // Dump the contents of the cache on the screen
+            dumpCache(cacheConts);
+
+            text[textIndex] = cacheConts[line].Data[word];
+            textIndex++;
+            if(textIndex % 16 == 0) {
+                text = realloc(text, sizeof(char) * (16 + textIndex));
+            } // end if condition*
         } else {
             printf("T: %d, CACHE Fault %d, ADDR %04X Label %X line %02X word %02X block %02X\n", globalTime, failNo++, address, LABEL, line, word, block);
             globalTime += 20;
-
-            // Copy the corresponding block from the RAM array
-            int startAddress = (block << 7) | (line << 4);
-            memcpy(cacheConts[line].Data, &Simul_RAM[startAddress], TAM_LINEA);
-
-            // Update the Label field
-            cacheConts[line].ETQ = LABEL;
+            
+            //cache miss handler
+            treatFailureMiss(cacheConts, Simul_RAM, LABEL, line , block);
 
             // Print a message indicating the block X is being loaded in the line Y
             printf("Loading Block %02X into Line %02X\n", block, line);
         } // end if else condition
+
+        accesses++;
+        sleep(1); // 1 second sleep
     } // end while loop
 
-    // Dump the contents of the cache on the screen
-    dumpCache(cacheConts);
-   
-    // Calculates the cache line of a given address
-
-
-    // Checks if tag cache line contains is the same
-
-
     // Writes the number of accesses and failures, avg time and text read
+    printf("Total accesses: %d; faults: %d; Average time: %.2f\n", accesses, failNo, (float)globalTime / accesses);
+    printf("Text read: ");
+    for (int i = 0; i < textIndex; i++) {
+        printf("%c", text[i]);
+    } // end for loop
 
+    printf("\n");
+
+    /*for(int i = 0; i < NUM_ROWS; i++) {
+        for(int j = 0; j < TAM_LINEA; j++) {
+            if(cacheConts[i].Data[j] != 0x23) {
+                printf("%c", cacheConts[i].Data[j]);
+            } // end if condition
+        } // end for loop
+    } // end for loop
+    printf("\n");*/
 
     // Process ends after reading dirs_memoria.txt (accesos_memoria.txt???) and actions needed
 
@@ -154,6 +169,7 @@ int main() {
     free(linea_buff);
     free(cacheConts);
     free(Simul_RAM);
+    free(text);
 
     printf("Al menos esto se esta imprimiendo. \n");
 
