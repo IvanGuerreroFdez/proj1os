@@ -145,20 +145,14 @@ int main() {
 
     printf("\n");
 
-    /*for(int i = 0; i < NUM_ROWS; i++) {
-        for(int j = 0; j < TAM_LINEA; j++) {
-            if(cacheConts[i].Data[j] != 0x23) {
-                printf("%c", cacheConts[i].Data[j]);
-            } // end if condition
-        } // end for loop
-    } // end for loop
-    printf("\n");*/
-
-    // Process ends after reading dirs_memoria.txt (accesos_memoria.txt???) and actions needed
-
-
     // Dump contents of information into CONTENTS_CACHE.bin
+    for(int i = 0; i < NUM_ROWS; i++) {
+        for(int j = 0; j < TAM_LINEA; j++) {
+            fprintf(cacheC, "%x ", cacheConts[i].Data[j]);
+        } // end for loop
 
+        fprintf(cacheC, "\n");
+    } // end for loop
 
     // Closes the files
     fclose(memoryA);
