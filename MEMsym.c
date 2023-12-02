@@ -11,7 +11,7 @@
 #define TAM_LINEA 16
 #define NUM_ROWS 8
 
-float avgTime = 0;
+//float avgTime = 0;
 int failNo = 0;
 
 // Struct for cache lines
@@ -56,7 +56,7 @@ void treatFailureMiss(T_CACHE_LINE *tbl, char *MRAM, int LABEL, int line, int bl
 
 int main() {
     // Initialization of variables
-    char *linea_buff;
+    //char *linea_buff;
     FILE *memoryA = fopen("./accesos_memoria.txt", "r"); // Opens accesos_memoria.txt in read mode
     FILE *ramC = fopen("./CONTENTS_RAM.bin", "rb"); // Opens CONTENTS_RAM.bin in read mode
     FILE *cacheC = fopen("./CONTENTS_CACHE.bin", "wb"); // Opens CONTENTS_CACHE.bin in write mode
@@ -80,7 +80,7 @@ int main() {
     cleanCache(cacheConts);
 
     // Dump the contents of the cache on the screen
-    dumpCache(cacheConts);
+    dumpCache(cacheConts)
 
     sleep(1); // 1 second sleep
     
@@ -91,25 +91,44 @@ int main() {
     } // end if condition
 
     fread(Simul_RAM, sizeof(unsigned char), 4096, ramC); // IVAN COMENTA ESTO POR FAVOR
-
     /*//PRUEBA
     for (int i=0; i<linesInMemoryA; i++) {
         printf("%02X \n", Simul_RAM[i]);
     }
     printf("\n");*/ 
 
-    // Invokes the parseAddress for all cache lines
-    for(int i = 0; i < NUM_ROWS; i++) {
-        // address[1-4] are empty and ready to be substituted, while address[0] is the address to be divided
-        address[0] = cacheConts[i];
-        parseAddress(address[0], address[1], address[2], address[3], address[4]);
-    } // end for loop
-    
-    /*
-    //Print Miss or Hit
-    printf("T: %d, Cache Miss %d, Address %04X, Label %X, Line %02X, Word %02X, Block %02X", i++, failNo++, addr, *LABEL, *line, *word, *block);
-    printf("T: %d, Cache Hit, Address %04X, Label %X, Line %02X, Word %02X, Data %02X", i++, addr, *LABEL, *line, *word, <ALGO>);
-    */
+    rewind(memoryA);
+    char *linea_buff = (char *) malloc(sizeof(char) * 16);
+    int globalTime = 0;
+    while (fgets(linea_buff, sizeof(linea_buff), memoryA) != NULL) {
+        unsigned int address = strtoul(linea_buff, NULL, 16);
+        int LABEL, word, line, block;
+        parseAddress(address, &LABEL, &word, &line, &block);
+
+        if(LABEL == cacheConts[line].ETQ) {
+            printf("T: %d, Cache Hit, Address %04X, Label %X, Line %02X, Word %02X, Data %02X\n", globalTime, address, LABEL, line, word, cacheConts[line].Data[word]); 
+            globalTime++;
+
+            // Dump the contents of the cache on the screen (for a cleaner execution it will be printed at the end)
+            // dumpCache(cacheConts);
+        } else {
+            printf("T: %d, CACHE Fault %d, ADDR %04X Label %X line %02X word %02X block %02X\n", globalTime, failNo++, address, LABEL, line, word, block);
+            globalTime += 20;
+
+            // Copy the corresponding block from the RAM array
+            int startAddress = (block << 7) | (line << 4);
+            memcpy(cacheConts[line].Data, &Simul_RAM[startAddress], TAM_LINEA);
+
+            // Update the Label field
+            cacheConts[line].ETQ = LABEL;
+
+            // Print a message indicating the block X is being loaded in the line Y
+            printf("Loading Block %02X into Line %02X\n", block, line);
+        } // end if else condition
+    } // end while loop
+
+    // Dump the contents of the cache on the screen
+    dumpCache(cacheConts);
    
     // Calculates the cache line of a given address
 
