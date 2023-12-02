@@ -45,12 +45,12 @@ void dumpCache(T_CACHE_LINE *tbl) {
     } // end for loop
 } // end of dumpCache
 
-/*void parseAddress(unsigned int addr, int *LABEL, int *word, int *line, int *block) {
+void parseAddress(unsigned int addr, int *LABEL, int *word, int *line, int *block) {
     *block = addr & 0x0F; // Extract the 4-bit block field
     *word = (addr >> 4) & 0x07; // Extract the 3-bit word field
     *line = (addr >> 7) & 0x07; // Extract the 3-bit line field
     *LABEL = (addr >> 10) & 0x1F; // Extract the 5-bit label field
-} // end of parseAddress*/
+} // end of parseAddress
 
 void treatFailureMiss(T_CACHE_LINE *tbl, char *MRAM, int LABEL, int line, int block) {} // end of treatFailureMiss
 
@@ -90,7 +90,7 @@ int main() {
         return -1;
     } // end if condition
 
-    fread(Simul_RAM, sizeof(unsigned char), 4096, ramC);
+    fread(Simul_RAM, sizeof(unsigned char), 4096, ramC); // IVAN COMENTA ESTO POR FAVOR
 
     /*//PRUEBA
     for (int i=0; i<linesInMemoryA; i++) {
@@ -98,8 +98,12 @@ int main() {
     }
     printf("\n");*/ 
 
-    // address[0] = linea i de accesos memoria;
-    //parseAddress(address[0], address[1], address[2], address[3], address[4]); // address[1-4] are empty and ready to be substituted
+    // Invokes the parseAddress for all cache lines
+    for(int i = 0; i < NUM_ROWS; i++) {
+        // address[1-4] are empty and ready to be substituted, while address[0] is the address to be divided
+        address[0] = cacheConts[i];
+        parseAddress(address[0], address[1], address[2], address[3], address[4]);
+    } // end for loop
     
     /*
     //Print Miss or Hit
