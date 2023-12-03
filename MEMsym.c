@@ -94,11 +94,6 @@ int main() {
     } // end if condition
 
     fread(Simul_RAM, sizeof(unsigned char), 4096, ramC); // Read the content of CONTENTS_RAM and stores it on Simul_RAM 
-    /*//PRUEBA
-    for (int i=0; i<linesInMemoryA; i++) {
-        printf("%02X \n", Simul_RAM[i]);
-    }
-    printf("\n");*/ 
 
     rewind(memoryA);
     char *linea_buff = (char *) malloc(sizeof(char) * 16);
@@ -164,8 +159,6 @@ int main() {
     free(cacheConts);
     free(Simul_RAM);
     free(text);
-
-    printf("Al menos esto se esta imprimiendo. \n");
 
     return 0;
 } // end of main
